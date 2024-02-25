@@ -11,7 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <GoogleOAuthProvider clientId="1037386075090-3286he4orl8jlli4n8j9p907ohmtde01.apps.googleusercontent.com">
-        <Component {...pageProps} />;
+        <Component {...pageProps} />
         <Toaster />
         <ReactQueryDevtools />
       </GoogleOAuthProvider>
