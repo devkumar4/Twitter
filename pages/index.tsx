@@ -7,23 +7,30 @@ import {
   BiMoney,
   BiImageAlt,
 } from "react-icons/bi";
-import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 
 import FeedCard from "@/components/FeedCard";
-import { SlOptions } from "react-icons/sl";
 import toast from "react-hot-toast";
-import { verifyUserGoogleTokenQuery } from "@/garphql/query/user";
+
 import { graphqlClient } from "@/clients/api";
 import { useCurrentUser } from "@/hooks/user";
-import { useQueryClient } from "@tanstack/react-query";
+
 import Image from "next/image";
 import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
 import { Tweet } from "@/gql/graphql";
 import TwitterLayout from "@/components/Layout/TwitterLayout";
+import { GetServerSideProps } from "next";
+import { getAllTweetsQuery } from "@/garphql/query/tweet";
 
-export default function Home() {
+interface HomeProps {
+  tweets?: Tweet[];
+}
+
+export default function Home(props: HomeProps) {
+  console.log(props.tweets);
+
   const { user } = useCurrentUser();
   const { tweets = [] } = useGetAllTweets();
+
   const { mutate } = useCreateTweet();
   const [content, setContent] = useState("");
   const handleSelectImage = useCallback(() => {
@@ -83,3 +90,14 @@ export default function Home() {
     </div>
   );
 }
+
+export const getServerProps: GetServerSideProps<HomeProps> = async (
+  context
+) => {
+  const allTweets = await graphqlClient.request(getAllTweetsQuery);
+  return {
+    props: {
+      tweets: allTweets.getAllTweets as Tweet[],
+    },
+  };
+};

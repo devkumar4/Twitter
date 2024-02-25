@@ -1,5 +1,5 @@
 import { useCurrentUser } from "@/hooks/user";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { BiHash, BiHomeCircle, BiMoney, BiUser } from "react-icons/bi";
 import { BsBell, BsBookmark, BsEnvelope, BsTwitter } from "react-icons/bs";
 import { SlOptions } from "react-icons/sl";
@@ -9,50 +9,20 @@ import toast from "react-hot-toast";
 import { graphqlClient } from "@/clients/api";
 import { verifyUserGoogleTokenQuery } from "@/garphql/query/user";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 interface TwitterlayoutProps {
   children: React.ReactNode;
 }
 interface TwitterSideButton {
   title: string;
   icon: React.ReactNode;
+  link: string;
 }
-const SidebarMenuItems: TwitterSideButton[] = [
-  {
-    title: "Home",
-    icon: <BiHomeCircle />,
-  },
-  {
-    title: "Explore",
-    icon: <BiHash />,
-  },
-  {
-    title: "Notifications",
-    icon: <BsBell />,
-  },
-  {
-    title: "Messages",
-    icon: <BsEnvelope />,
-  },
-  {
-    title: "Bookmarks",
-    icon: <BsBookmark />,
-  },
-  {
-    title: "Twitter Blue",
-    icon: <BiMoney />,
-  },
-  {
-    title: "Profile",
-    icon: <BiUser />,
-  },
-  {
-    title: "More Options",
-    icon: <SlOptions />,
-  },
-];
+
 const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
+
   const handleLoginWithGoogle = useCallback(
     async (cred: CredentialResponse) => {
       const googleToken = cred.credential;
@@ -72,6 +42,52 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
     },
     [queryClient]
   );
+
+  const SidebarMenuItems: TwitterSideButton[] = useMemo(
+    () => [
+      {
+        title: "Home",
+        icon: <BiHomeCircle />,
+        link: "/",
+      },
+      {
+        title: "Explore",
+        icon: <BiHash />,
+        link: "/",
+      },
+      {
+        title: "Notifications",
+        icon: <BsBell />,
+        link: "/",
+      },
+      {
+        title: "Messages",
+        icon: <BsEnvelope />,
+        link: "/",
+      },
+      {
+        title: "Bookmarks",
+        icon: <BsBookmark />,
+        link: "/",
+      },
+      {
+        title: "Twitter Blue",
+        icon: <BiMoney />,
+        link: "/",
+      },
+      {
+        title: "Profile",
+        icon: <BiUser />,
+        link: `${user?.id}`,
+      },
+      {
+        title: "More Options",
+        icon: <SlOptions />,
+        link: "/",
+      },
+    ],
+    [user?.id]
+  );
   return (
     <div>
       <div className="grid grid-cols-12 h-screen w-screen sm:px-56">
@@ -83,12 +99,14 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
             <div className="mt-1 text-xl pr-4">
               <ul>
                 {SidebarMenuItems.map((item) => (
-                  <li
-                    className="flex justify-start items-center gap-4 hover:bg-gray-800 rounded-full px-3 py-2 w-fit cursor-pointer mt-2"
-                    key={item.title}
-                  >
-                    <span className=" text-2xl">{item.icon}</span>
-                    <span className="hidden sm:inline">{item.title}</span>
+                  <li key={item.title}>
+                    <Link
+                      href={item.link}
+                      className="flex justify-start items-center gap-4 hover:bg-gray-800 rounded-full px-3 py-2 w-fit cursor-pointer mt-2"
+                    >
+                      <span className=" text-2xl">{item.icon}</span>
+                      <span className="hidden sm:inline">{item.title}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -104,7 +122,7 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
           </div>
 
           {user && (
-            <div className="absolute bottom-2 flex gap-2 items-center bg-slate-800 px-3 py-2 rounded-full">
+            <div className="absolute bottom-2 flex gap-2 items-center  px-3 py-2 rounded-full mr-10 bg-transparent hover:cursor-pointer hover:bg-slate-600 transition-all">
               {user && user.profileImageURL && (
                 <Image
                   className="rounded-full"
@@ -115,8 +133,8 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
                 />
               )}
               <div className="hidden sm:block">
-                <h3 className="text-xl">
-                  {user.firstName} {user.lastName}
+                <h3 className="text-lg">
+                  {user.firstName} {user.lastName} {"     "}
                 </h3>
               </div>
             </div>
