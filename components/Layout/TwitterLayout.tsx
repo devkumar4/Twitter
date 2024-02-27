@@ -11,6 +11,7 @@ import { verifyUserGoogleTokenQuery } from "@/garphql/query/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { FaXTwitter } from "react-icons/fa6";
 import Link from "next/link";
+import { QueryDocumentKeys } from "graphql/language/ast";
 interface TwitterlayoutProps {
   children: React.ReactNode;
 }
@@ -28,7 +29,9 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
   const handleLoginWithGoogle = useCallback(
     async (cred: CredentialResponse) => {
       const googleToken = cred.credential;
-      if (!googleToken) toast.error("Google token not found");
+      if (!googleToken) {
+        return toast.error("Google token not found");
+      }
       const { verifyGoogleToken } = await graphqlClient.request(
         verifyUserGoogleTokenQuery,
         {
@@ -40,7 +43,7 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
       if (verifyGoogleToken) {
         window.localStorage.setItem("twitter_token", verifyGoogleToken);
       }
-      await queryClient.invalidateQueries(["current-user"]);
+      await queryClient.invalidateQueries({ queryKey: ["current-user"] });
     },
     [queryClient]
   );
@@ -180,7 +183,7 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
                       {el?.firstName} {el?.lastName}
                     </div>
                     <Link
-                      href={`${el.id}`}
+                      href={`${el?.id}`}
                       className="bg-white text-black text-sm px-5 py-[3px] rounded-lg w-full"
                     >
                       View
