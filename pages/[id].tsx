@@ -8,12 +8,43 @@ import { BsArrowLeftShort } from "react-icons/bs";
 import { GetServerSideProps, NextPage } from "next";
 import { graphqlClient } from "@/clients/api";
 import { getUserByIdQuery } from "@/garphql/query/user";
+import { useCallback, useMemo } from "react";
+import {
+  followUserMutation,
+  unfollowUserMutation,
+} from "@/garphql/mutation/user";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ServerProps {
   userInfo?: User;
 }
 const UserProfilePage: NextPage<ServerProps> = (props) => {
   const { user } = useCurrentUser();
+  const { user: currentUser } = useCurrentUser();
+  const queryClient = useQueryClient();
+
+  const amIFollwing = useMemo(() => {
+    if (!props.userInfo) return false;
+    return (
+      (currentUser?.following?.findIndex(
+        (el) => el?.id == props?.userInfo?.id
+      ) ?? -1) >= 0
+    );
+  }, [currentUser?.id, props.userInfo]);
+
+  const handleFollowuser = useCallback(async () => {
+    if (!props?.userInfo?.id) return;
+    await graphqlClient.request(followUserMutation, { to: props.userInfo?.id });
+    await queryClient.invalidateQueries(["current-user"]);
+  }, [props?.userInfo?.id, queryClient]);
+
+  const handleUnfollowuser = useCallback(async () => {
+    if (!props?.userInfo?.id) return;
+    await graphqlClient.request(unfollowUserMutation, {
+      to: props.userInfo?.id,
+    });
+    await queryClient.invalidateQueries(["current-user"]);
+  }, [props?.userInfo?.id, queryClient]);
 
   return (
     <div>
@@ -44,6 +75,31 @@ const UserProfilePage: NextPage<ServerProps> = (props) => {
               {props.userInfo?.firstName}
               {props.userInfo?.lastName}
             </h1>
+            <div className="flex justify-between items-center">
+              <div className="flex gap-4 mt-2 text-sm text-gray-400 ">
+                <span>{props.userInfo?.followers?.length} followers</span>
+                <span>{props.userInfo?.following?.length} following</span>
+              </div>
+              {currentUser?.id !== props.userInfo?.id && (
+                <>
+                  {amIFollwing ? (
+                    <button
+                      onClick={handleUnfollowuser}
+                      className=" bg-white text-black px-3 py-1 text-sm  rounded-full"
+                    >
+                      Unfollow
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleFollowuser}
+                      className=" bg-white text-black px-3 py-1 text-sm  rounded-full"
+                    >
+                      Follow
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
           <div>
             {props.userInfo?.tweets?.map((tweet) => (

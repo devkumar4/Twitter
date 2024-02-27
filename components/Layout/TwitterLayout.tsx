@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { graphqlClient } from "@/clients/api";
 import { verifyUserGoogleTokenQuery } from "@/garphql/query/user";
 import { useQueryClient } from "@tanstack/react-query";
+import { FaXTwitter } from "react-icons/fa6";
 import Link from "next/link";
 interface TwitterlayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ interface TwitterSideButton {
 
 const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
   const { user } = useCurrentUser();
+
   const queryClient = useQueryClient();
 
   const handleLoginWithGoogle = useCallback(
@@ -91,10 +93,10 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
   return (
     <div>
       <div className="grid grid-cols-12 h-screen w-screen sm:px-56">
-        <div className="col-span-2 sm:col-span-3  pt-1 sm:justify-end flex pr-4 relative">
+        <div className="col-span-3 sm:col-span-3  pt-1 sm:justify-end flex pr-4 relative">
           <div>
-            <div className="text-2xl h-fit w-fit hover:bg-gray-800 rounded-full p-4 cursor-pointer transition-all">
-              <BsTwitter />
+            <div className="text-3xl h-fit w-fit hover:bg-gray-800 rounded-full p-4 cursor-pointer transition-all">
+              <FaXTwitter />
             </div>
             <div className="mt-1 text-xl pr-4">
               <ul>
@@ -142,17 +144,50 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
         </div>
 
         <div
-          className="col-span-10 sm:col-span-5 border-r-[1px] border-l-[1px] h-screen overflow-y-scroll border-gray-600"
+          className="col-span-11 sm:col-span-6 border-r-[0.5px] border-l-[0.5px] h-screen overflow-y-scroll border-gray-900"
           style={{ scrollbarWidth: "none" }}
         >
           {props.children}
         </div>
 
         <div className="col-span-0 sm:col-span-3 p-5">
-          {!user && (
+          {!user ? (
             <div className="p-5 rounded-lg bg-slate-700">
-              <h2 className="my-2 text-2xl">New to Twitter ?</h2>
+              <h2 className="my-2 text-lg">New to Twitter ?</h2>
               <GoogleLogin onSuccess={handleLoginWithGoogle} />
+            </div>
+          ) : (
+            <div className="px-2 py-3 bg-slate-800 rounded-lg">
+              <h1 className="my-2 text-sm font-bold mb-3 ">
+                Users you may know
+              </h1>
+              {user?.recommendedUsers?.map((el) => (
+                <div
+                  key={el?.firstName}
+                  className="flex items-center gap-3 mt-2"
+                >
+                  {el?.profileImageURL && (
+                    <Image
+                      src={el?.profileImageURL}
+                      alt="recommended-user-image"
+                      height={40}
+                      width={40}
+                      className="rounded-full"
+                    />
+                  )}
+                  <div>
+                    <div>
+                      {el?.firstName} {el?.lastName}
+                    </div>
+                    <Link
+                      href={`${el.id}`}
+                      className="bg-white text-black text-sm px-5 py-[3px] rounded-lg w-full"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

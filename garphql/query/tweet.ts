@@ -2,7 +2,7 @@ import { graphql } from "@/gql";
 
 export const getAllTweetsQuery = graphql(`
   #graphql
-  query getAllTweets {
+  query GetAllTweets {
     getAllTweets {
       id
       content
@@ -14,5 +14,13 @@ export const getAllTweetsQuery = graphql(`
         profileImageURL
       }
     }
+  }
+`);
+
+export const getSignedURLForTweetQuery = graphql(`
+  #graphql
+
+  query GetSignedURL($imageName: String!, $imageType: String!) {
+    getSignedURLForTweet(imageName: $imageName, imageType: $imageType)
   }
 `);
